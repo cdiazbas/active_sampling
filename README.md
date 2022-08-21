@@ -1,1 +1,1 @@
-# active_sampling
+# Designing wavelength sampling for Fabry-Pérot observations

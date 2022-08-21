@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.DS_Store
+._DS_Store
+._*
+
+# Ignore output, just saving scripts
+*.npy
+*.png
+*.pdf
