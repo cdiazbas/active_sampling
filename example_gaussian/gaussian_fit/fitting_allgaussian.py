@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 np.random.seed(1)
 
+"""
+Comparisong with the sampling found with the NN
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
+
 # Create data to be fitted
 methodsq = 'powell'
 max_nfevq = 1000
