@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Using MaxError + neural network
-
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -10,6 +7,15 @@ from torch.autograd import Variable
 from tqdm import tqdm
 torch.set_printoptions(sci_mode=False)
 
+"""
+Finding best sampling for the CaII line at 8542A
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sampling a spectral line:
 noise = 1e-3
 
@@ -32,14 +38,21 @@ print('wav.shape',wav.shape)
 print('wav',wav)
 print(np.around(sorted(wav[ca8_idxs.astype('int')]),3))
 
+
+# Plot to check some samples in the dataset:
 plt.figure()
 for i in range(15):
     plt.plot(wav,stokes[i,0,:])
+plt.minorticks_on()
+plt.ylabel('Intensity axis [au]')
+plt.xlabel('Wavelength axis [index]')
 plt.savefig('stokes_sample_.pdf')
 print(stokes.shape)
 
 
-
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Optimization
 npoints = 11
 ni_epochs = 10000#//10
 diff_point = []
@@ -71,7 +84,6 @@ for jj in range(newpoints2add+1):
 
 
     loss_array = []
-    # diff_array = []
     for loop in tqdm(range(ni_epochs+1)):
         optimizer.zero_grad()        #reset gradients
         out = mod(x_torch)           #evaluate model
@@ -83,15 +95,10 @@ for jj in range(newpoints2add+1):
         optimizer.step()             #step fordward
         loss_array.append(loss.item())
         
-        # diff_array.append(torch.mean(((mod(x_torch + noise_temp[:,:,xx]))- (y_torch+noise_temp))**2.,axis=0)[0,:])
-
         scheduler.step()
 
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    # result = torch.stack(diff_array, dim=1)
-    # diff = torch.mean(result[:,-ni_epochs//10:],axis=1) # larger average
     diff = torch.mean((out - y_torch)**2.,axis=0)[0,:]
 
     newpoint = torch.argmax(diff).item()
@@ -130,15 +137,12 @@ for jj in range(newpoints2add+1):
     out_test = out.detach().numpy()
     zoom = 0.8
     fig2, ax = plt.subplots(1, 5, sharey=True,figsize=(20*zoom,4.5*zoom))
-    # fig2, ax = plt.subplots(1, 15, sharey=True,figsize=(40*zoom,4.5*zoom))
     liseg = np.array([0,8,4,12,1000])
-    # liseg = np.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,25,26,27,28,29,30,31,32,33,34,35,36])
     for ii in range(len(ax)):
-        # ax[ii].set_title(str(liseg[ii]))
         ax[ii].plot(wav,100*stokes[liseg[ii],0,:],label='target')
         ax[ii].plot(wav,100*out_test[liseg[ii],0,:],label='output')
-        ax[ii].scatter(wav[x.astype('int')],100*stokes[liseg[ii],0,x[:].astype('int')],color='red',label='sampling DNN',zorder=2,s=30.0,alpha=0.8)
-        ax[ii].scatter(wav[ca8_idxs.astype('int')],100*stokes[liseg[ii],0,ca8_idxs[:].astype('int')],color='k',marker="x",label='sampling original',s=5.0,zorder=3)
+        ax[ii].scatter(wav[x.astype('int')],100*stokes[liseg[ii],0,x[:].astype('int')],color='red',label='our scheme',zorder=2,s=30.0,alpha=0.8)
+        ax[ii].scatter(wav[ca8_idxs.astype('int')],100*stokes[liseg[ii],0,ca8_idxs[:].astype('int')],color='k',marker="x",label='delaCruz12',s=5.0,zorder=3)
         ax[ii].minorticks_on()
     
     ax[0].legend()

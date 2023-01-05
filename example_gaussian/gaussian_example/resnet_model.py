@@ -6,9 +6,10 @@ import random
 from torch.nn import init
 
 """
-Neural network model for 1D regression
+A general-purpose residual network for 1-dim inputs.
 Coded by Carlos Diaz (UiO-RoCS, 2022)
 """
+
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class LayerNorm(nn.Module):

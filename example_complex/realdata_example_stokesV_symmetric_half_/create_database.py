@@ -1,19 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 import sparsetools as sp
-import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from astropy.convolution import convolve
-import satlas as sa
 
+"""
+Creating the database for the sampling process
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # READ THE PROFILES
 s = sp.profile('../../../create_syntheticset/synthetic_out3.nc')
 
 database = s.dat.reshape(s.dat.shape[0]*s.dat.shape[1]*s.dat.shape[2],s.dat.shape[3],s.dat.shape[4])
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# SPECTRAL PROFILE
 # We assumed a Gaussian spectral filter transmission.
 def gaussian( x , s):
     return 1./np.sqrt( 2. * np.pi * s**2 ) * np.exp( -x**2 / ( 2. * s**2 ) )
@@ -34,6 +39,8 @@ for ii in tqdm(range(database.shape[0])):
 databasek = database[:,:,3]
 print('->',databasek.shape)
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # To avoid many similar samples
 nprofiles = 15000//2
 from sklearn.cluster import KMeans, MiniBatchKMeans
@@ -48,6 +55,9 @@ print(databasek.shape)
 
 plt.figure()
 plt.plot(databasek[:50,:].T)
+plt.minorticks_on()
+plt.ylabel('Intensity axis [au]')
+plt.xlabel('Wavelength axis [index]')
 plt.savefig('stokes_sample.pdf')
 
 

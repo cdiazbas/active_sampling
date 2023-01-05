@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Using Nelder-mead + neural network
-
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -14,6 +10,12 @@ from scipy import optimize
 from tqdm import tqdm
 torch.set_printoptions(sci_mode=False)
 from resnet_model import ResidualNet
+
+"""
+Finding best sampling for the CaII line at 8542A using the temperature
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
 
 # Sampling a spectral line:
 stokes = np.load('stokes.npy')
