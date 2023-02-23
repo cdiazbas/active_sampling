@@ -4,6 +4,13 @@ import sparsetools as sp
 from tqdm import tqdm
 from astropy.convolution import convolve
 
+"""
+Creating the database for the sampling process
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # READ THE PROFILES
 s = sp.profile('../../../create_syntheticset/synthetic_out3.nc')
 
@@ -30,6 +37,10 @@ databasek = database[:,:,0]
 
 print('->',databasek.shape)
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# FILTERING SOME PROFILES
+
 # To avoid too intense profiles that might dominate the error
 databasek = databasek[np.max(databasek,axis=1) < np.max(np.mean(databasek,axis=1)+1*np.std(databasek,axis=1)),:]
 databasek = databasek[np.max(databasek,axis=1) < np.max(np.mean(databasek,axis=1)+1*np.std(databasek,axis=1)),:]
@@ -46,11 +57,18 @@ import random
 databasek = databasek[random.shuffle(list(range(database.shape[0]))),:,:][0]
 print(databasek.shape)
 
+import os
+if not os.path.exists('output'):
+   os.makedirs('output')
+
 plt.figure()
 plt.plot(databasek[:50,:].T)
-plt.savefig('stokes_sample.pdf')
+plt.minorticks_on()
+plt.ylabel('Intensity axis [au]')
+plt.xlabel('Wavelength axis [index]')
+plt.savefig('output/stokes_sample.pdf')
 
 
-np.save('stokes.npy',databasek)
-np.save('wav.npy',s.wav)
+np.save('output/stokes.npy',databasek)
+np.save('output/wav.npy',s.wav)
 

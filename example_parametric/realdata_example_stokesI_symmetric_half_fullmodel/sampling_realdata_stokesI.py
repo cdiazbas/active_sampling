@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Using MinError + neural network
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -11,48 +8,48 @@ from torch.autograd import Variable
 from tqdm import tqdm
 torch.set_printoptions(sci_mode=False)
 
+"""
+Parametric model optimized with a linear interpolation method
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def sampling_mode(size, npoints, ninner, distance, multiple=1):
-
+    # Generates a sampling scheme given npoints, ninner points, distance between points
+    # and factor distance of outer points
     innerside = np.arange(ninner)*distance
     outterside = np.arange(npoints-ninner+1)*distance*multiple
     output = np.concatenate((size -innerside[:-1],size -(outterside+innerside[-1])), axis=0).astype('float32')
-
     if np.abs(np.max(output)-np.min(output)) > size:
         return None
     else:
         return  output
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Training set
-stokes = np.load('stokes.npy')
-# print(stokes.shape)
+stokes = np.load('output/stokes.npy')
 
 stokes = np.expand_dims(stokes, axis=1)
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
-# SAMPLING DE LA CRUZ 2012
-ca8_idxs = np.array([0,20,40,46,48,50,52,54,56,58,60])*2
-# print(len(ca8_idxs))
-
-wav = np.load('wav.npy')[16:-15][:121]#[::2]
+wav = np.load('output/wav.npy')[16:-15][:121]#[::2]
 wav -= wav[-1] # Centrered
 print('wav.shape',wav.shape)
-# print('wav',wav)
 print('wav comparison:',np.around(sorted(wav[ca8_idxs.astype('int')]),3))
 
 plt.figure()
 for i in range(15):
     plt.plot(wav,stokes[i,0,:])
-plt.savefig('stokes_sample_.pdf')
+plt.savefig('output/stokes_sample_.pdf')
 print(stokes.shape)
 
 
-
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 npoints = 9
 ni_epochs = 100000#00#//10
 diff_point = []
@@ -63,8 +60,6 @@ noise = 1e-4
 batch_size = 1000
 mm = 1 # Distance factor after inner points
 
-# npoints = 7
-# mm = 5
 
 input_size = npoints
 output_size = stokes.shape[2]
@@ -109,8 +104,6 @@ for loop in tqdm(range(ni_epochs+1)):
 
 
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 # # Some plots of progress
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -144,7 +137,7 @@ plt.title(r'Best: d={0:2.1f} $\rm m\AA$, inner={1:2.0f}, mse={2:1.1e}'.format( d
 plt.minorticks_on()
 plt.xlabel('# inner points')
 plt.ylabel(r'distance [$\rm m\AA$]')
-plt.savefig('im_nn_'+str(mm)+'.pdf')
+plt.savefig('output/im_nn_'+str(mm)+'.pdf')
 plt.close(fig1)
 
 
@@ -155,10 +148,8 @@ plt.axhline(  np.min(loss_array)  ,color='black',ls='--')
 plt.title('loss_final: {0:2.2e}'.format( np.min(loss_array)))
 plt.yscale('log')
 plt.minorticks_on()
-plt.savefig('im_error_'+str(mm)+'.pdf')
+plt.savefig('output/im_error_'+str(mm)+'.pdf')
 plt.close(fig1)
-
-
 
 
 
@@ -168,7 +159,7 @@ nwav = np.interp( x, np.arange(wav.size), wav)
 
 print('final_sampling [interal units]: ',x)
 print('final_sampling [wavelength]: ',nwav)
-np.save('final_sampling.npy',x)
+np.save('output/final_sampling.npy',x)
 
 
 dparam = torch.from_numpy(np.hstack((paramtest[np.argmin(losstest)][0], paramtest[np.argmin(losstest)][1])))
@@ -178,20 +169,17 @@ zoom = 0.8
 fig2, ax = plt.subplots(1, 5, sharey=True,figsize=(20*zoom,4.5*zoom))
 liseg = np.array([16,18,15,21,20])
 for ii in range(len(ax)):
-    # ax[ii].set_title(str(liseg[ii]))
     ax[ii].plot(wav,stokes[liseg[ii],0,:],label='target')
     ax[ii].plot(wav,out_test[liseg[ii],0,:],label='output')
     ax[ii].scatter(nwav,np.interp(nwav, wav, stokes[liseg[ii],0,:]),color='red',label='sampling DNN',zorder=2,s=30.0,alpha=0.8)
-    # ax[ii].scatter(wav[ca8_idxs.astype('int')],stokes[liseg[ii],0,ca8_idxs[:].astype('int')],color='k',marker="x",label='sampling original',s=5.0,zorder=3)
     ax[ii].minorticks_on()
-
     for kk in range(len(nwav)):
         ax[ii].axvline(nwav[kk],ls='-',alpha=0.1,color='k')
 ax[0].legend()
 ax[0].set_xlabel(r"$\lambda - 8542.1$ $[\rm \AA]$")
 ax[0].set_ylabel(r'Stokes I/I$\rm _C$')
 plt.locator_params(axis='y', nbins=5)
-plt.savefig('im_stokes_'+str(mm)+'.pdf',bbox_inches='tight')
+plt.savefig('output/im_stokes_'+str(mm)+'.pdf',bbox_inches='tight')
 plt.close(fig2)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Using MinError + neural network
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -11,38 +8,38 @@ from torch.autograd import Variable
 from tqdm import tqdm
 torch.set_printoptions(sci_mode=False)
 
+"""
+Parametric model optimized with a linear interpolation method (loop over all posibilities)
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def sampling_mode(size, npoints, ninner, distance, multiple=1):
-
+    # Generates a sampling scheme given npoints, ninner points, distance between points
+    # and factor distance of outer points
     innerside = np.arange(ninner)*distance
     outterside = np.arange(npoints-ninner+1)*distance*multiple
     output = np.concatenate((size -innerside[:-1],size -(outterside+innerside[-1])), axis=0).astype('float32')
-
     if np.abs(np.max(output)-np.min(output)) > size:
         return None
     else:
         return  output
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Training set
 stokes = np.load('stokes.npy')
-# print(stokes.shape)
 
 stokes = np.expand_dims(stokes, axis=1)
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
-# SAMPLING DE LA CRUZ 2012
-ca8_idxs = np.array([0,20,40,46,48,50,52,54,56,58,60])*2
-# print(len(ca8_idxs))
 
 wav = np.load('wav.npy')[16:-15][:121]#[::2]
 wav -= wav[-1] # Centrered
 print('wav.shape',wav.shape)
-# print('wav',wav)
 print('wav comparison:',np.around(sorted(wav[ca8_idxs.astype('int')]),3))
 
 plt.figure()
@@ -52,6 +49,8 @@ plt.savefig('stokes_sample_.pdf')
 print(stokes.shape)
 
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 npoints = 9
 ni_epochs = 100000#0#//10
@@ -109,55 +108,9 @@ for npoints in range(2,10):
             scheduler.step()
 
 
-            # if loop % int(ni_epochs/10) == 0:
-            #     # print('Plotting')
-            #     darray = np.linspace(0.0,maxi,10).astype('float32')
-            #     dinner = np.arange(1.0,npoints).astype('float32')
-            #     losstest = []
-            #     paramtest = []
-            #     for ii in range(darray.size):
-            #         for jj in range(dinner.size):
-            #             sampling = sampling_mode(output_size-1, npoints, dinner[jj], darray[ii], multiple=mm)
-            #             # print(sampling)
-            #             if sampling is not None:
-            #                 dparam = torch.from_numpy(np.concatenate((darray[ii,None],dinner[jj,None]), axis=0))
-            #                 losstest.append(loss_fn(mod(y_torch,dparam, torch.from_numpy(sampling)), y_torch).item())
-            #                 paramtest.append((dinner[jj], darray[ii]))
-            #             else:
-            #                 pass
-
-            #     # Neural network training:
-            #     fig1 = plt.figure()
-            #     plt.plot(losstest,'.-')
-            #     plt.axvline(  np.argmin(losstest)  ,color='black',ls='--')
-            #     plt.title('best: {0:2.2e}, {1:2.2e}'.format( paramtest[np.argmin(losstest)][0], paramtest[np.argmin(losstest)][1]  ))
-            #     plt.yscale('log')
-            #     plt.minorticks_on()
-            #     plt.xlabel('Wavelength axis [index]')
-            #     plt.ylabel('Mean squared error [Stokes I]')
-            #     plt.savefig('im_nn.pdf')
-            #     plt.close(fig1)
-
-
-            #     # Neural network training:
-            #     fig1 = plt.figure()
-            #     plt.plot(loss_array)
-            #     plt.axhline(  np.min(loss_array)  ,color='black',ls='--')
-            #     plt.title('loss_final: {0:2.2e}'.format( np.min(loss_array)))
-            #     plt.yscale('log')
-            #     plt.minorticks_on()
-            #     plt.savefig('im_error.pdf')
-            #     plt.close(fig1)
-
-
-
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
         # # Some plots of progress
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        # print('Final plots ...')
         darray = np.linspace(0.0,maxi,qq).astype('float32')
         dinner = np.arange(1.0,npoints+1).astype('float32')
         losstest_ = np.zeros((len(darray),len(dinner)))*np.nan
@@ -189,7 +142,6 @@ for npoints in range(2,10):
         plt.savefig(folderloop+'im_nn_'+str(mm)+'_'+str(npoints)+'.pdf')
         plt.close(fig1)
 
-
         # Neural network training:
         fig1 = plt.figure()
         plt.plot(loss_array)
@@ -201,15 +153,9 @@ for npoints in range(2,10):
         plt.close(fig1)
 
 
-
-
-
         # Final sampling:
         x = sampling_mode(output_size-1, npoints, paramtest[np.argmin(losstest)][1], paramtest[np.argmin(losstest)][0], multiple=mm)
         nwav = np.interp( x, np.arange(wav.size), wav)
-
-        # print('final_sampling [interal units]: ',x)
-        # print('final_sampling [wavelength]: ',nwav)
         np.save(folderloop+'final_sampling_'+str(mm)+'_'+str(npoints)+'.npy',x)
 
 
@@ -220,11 +166,9 @@ for npoints in range(2,10):
         fig2, ax = plt.subplots(1, 5, sharey=True,figsize=(20*zoom,4.5*zoom))
         liseg = np.array([16,18,15,21,20])
         for ii in range(len(ax)):
-            # ax[ii].set_title(str(liseg[ii]))
             ax[ii].plot(wav,stokes[liseg[ii],0,:],label='target')
             ax[ii].plot(wav,out_test[liseg[ii],0,:],label='output')
             ax[ii].scatter(nwav,np.interp(nwav, wav, stokes[liseg[ii],0,:]),color='red',label='sampling DNN',zorder=2,s=30.0,alpha=0.8)
-            # ax[ii].scatter(wav[ca8_idxs.astype('int')],stokes[liseg[ii],0,ca8_idxs[:].astype('int')],color='k',marker="x",label='sampling original',s=5.0,zorder=3)
             ax[ii].minorticks_on()
 
             for kk in range(len(nwav)):

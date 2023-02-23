@@ -5,6 +5,11 @@ import torch.nn.functional as F
 import random
 from torch.nn import init
 
+"""
+A general-purpose residual network for 1-dim inputs.
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class LayerNorm(nn.Module):
     # https://github.com/pytorch/pytorch/issues/1959#issuecomment-312364139
@@ -208,26 +213,13 @@ class ResidualNet2(nn.Module):
 
 
     def forward(self, x, dparam, xnew):
-
         x = (x-self.mean_input)/self.std_input
-        # print(self.mean_input)
-        # print(self.std_input)
-        # dparam[1] = 100*dparam[1]
-        # print(len(xnew))
+
         dparam[1] = (dparam[1]-len(xnew)//2)/len(xnew)
         self.dparam = dparam
-        # xnew = x.shape[-1] - torch.arange(self.in_features) -1
-        # print('===>',xnew,dparam)
-        # print(dparam.shape,xnew.shape)
-
-        # from interp1d import interp1d
-        # yq_cpu = interp1d(torch.arange(x.shape[-1]).repeat(x.shape[0],1), x[:,0,:], xnew, None)[:,None,:]
-        # print(yq_cpu.shape)
 
         from interp_1d import LinearInterp1D
         yq_interpol = LinearInterp1D(torch.arange(x.shape[-1]).repeat(x.shape[0],1), x[:,0,:])
         yq_cpu = yq_interpol._interp(xnew,None)[:,None,:]
-        # print(yq_cpu.shape,self.std_output.shape,self.mean_output.shape)
-        # print('outside',dparam.shape)
 
         return self.forward_mu(yq_cpu,context=torch.ones_like(yq_cpu[:,:,0:2])*dparam)*self.std_output + self.mean_output

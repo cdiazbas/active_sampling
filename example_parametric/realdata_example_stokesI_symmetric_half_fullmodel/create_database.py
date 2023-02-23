@@ -57,14 +57,18 @@ import random
 databasek = databasek[random.shuffle(list(range(database.shape[0]))),:,:][0]
 print(databasek.shape)
 
+import os
+if not os.path.exists('output'):
+   os.makedirs('output')
+
 plt.figure()
 plt.plot(databasek[:50,:].T)
 plt.minorticks_on()
 plt.ylabel('Intensity axis [au]')
 plt.xlabel('Wavelength axis [index]')
-plt.savefig('stokes_sample.pdf')
+plt.savefig('output/stokes_sample.pdf')
 
 
-np.save('stokes.npy',databasek)
-np.save('wav.npy',s.wav)
+np.save('output/stokes.npy',databasek)
+np.save('output/wav.npy',s.wav)
 

@@ -16,16 +16,18 @@ Testing uniform sampling for the CaII line at 8542A using the temperature
 Coded by Carlos Diaz (UiO-RoCS, 2022)
 """
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Sampling a spectral line:
-stokes = np.load('stokes.npy')
+stokes = np.load('output/stokes.npy')
 stokes = np.expand_dims(stokes, axis=1)
 
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
-temp = np.load('temperature.npy')/1e3
+temp = np.load('output/temperature.npy')/1e3
 temp = np.expand_dims(temp, axis=1)
 temp = np.concatenate((temp,temp)) # make that symmetric!
 
@@ -35,9 +37,14 @@ for i in range(15):
 plt.minorticks_on()
 plt.ylabel('Intensity axis [au]')
 plt.xlabel('Wavelength axis [index]')
-plt.savefig('stokes_sample_.pdf')
+plt.savefig('output/stokes_sample_.pdf')
 
 print(stokes.shape)
+
+import os
+if not os.path.exists('output/sampling_uniform'):
+   os.makedirs('output/sampling_uniform')
+
 
 
 # STEPS:
@@ -107,9 +114,7 @@ def f_nn(x,edges=None,ni_epochs=5000):
 
     np.save('output/sampling_uniform/stokes_error_temp'+str(input_size)+'.npy',diff.detach().numpy())
 
-
-    # print(xx, chi2)#, end='\r')
-    print('n= '+str(len(xx))+' points ->', xx, '{0:.2e}'.format(loss.item()) )#, end='\r')
+    print('n= '+str(len(xx))+' points ->', xx, '{0:.2e}'.format(loss.item()) )
 
     results_xx.append(xx[0])
     results_chi2.append(chi2)

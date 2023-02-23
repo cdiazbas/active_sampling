@@ -168,7 +168,6 @@ class ResidualNet(nn.Module):
         output = self.StokesEmbedding_encoder(output)
         return output
 
-
     def forward_mu(self, inputs, context=None):
         if context is None:
             temps = self.initial_layer(inputs)
