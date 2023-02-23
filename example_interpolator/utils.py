@@ -1,6 +1,7 @@
 import numpy as np
 # from https://github.com/morosinroberta/spatial_WFA/blob/master/wfa_spatial.py
 
+
 # ====================================================================
 class line:
     """
@@ -65,6 +66,35 @@ def cder(x, y):
         dy = (y[:,:,0,ii+1] - y[:,:,0,ii]) / dx
         
         yp[:,:,ii] = (odx * dy + dx * ody) / (dx + odx)
+        
+        odx = dx; ody = dy
+    
+    yp[:,:,-1] = ody    
+    return yp
+
+
+# ====================================================================
+def cder2(x, y):
+    """
+    function cder computes the derivatives of Stokes I (y)
+    
+    Input: 
+            x: 1D wavelength array
+            y: 4D data array (ny, nx, nStokes, nw)
+            Use the usual centered derivatives formula for non-equidistant grids.
+    """
+    ny, nx, nstokes, nlam = y.shape[:]
+    yp = np.zeros((ny, nx, nlam), dtype='float32')
+    
+    odx = x[1]-x[0]; ody = (y[:,:,0,1] - y[:,:,0,0]) / odx
+    yp[:,:,0] = ody
+    
+    for ii in range(1,nlam-1):
+        dx = x[ii+1] - x[ii]
+        dy = (y[:,:,0,ii+1] - y[:,:,0,ii]) / dx
+        
+        # yp[:,:,ii] = (odx * dy + dx * ody) / (dx + odx)
+        yp[:,:,ii] = (dx * dy + dx * dy) / (dx + odx)
         
         odx = dx; ody = dy
     

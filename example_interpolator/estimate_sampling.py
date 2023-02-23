@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Using MaxError + neural network
-
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -10,32 +7,35 @@ from torch.autograd import Variable
 from tqdm import tqdm
 torch.set_printoptions(sci_mode=False)
 
+
+"""
+Finds the right sampling for Stokes I and save the results in the same folder
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sampling a spectral line:
 noise = 1e-3
 
 # Training set
-stokes = np.load('stokesI.npy')
+stokes = np.load('output/stokesI.npy')
 print(stokes.shape)
 
 stokes = np.expand_dims(stokes, axis=1)
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
-# stokes = stokes[:,:,:121]#[:,:,::2]
 
-# SAMPLING DE LA CRUZ 2012
-ca8_idxs = np.array([0,20,40,46,48,50,52,54,56,58,60])*2
-print(len(ca8_idxs))
-
-wav = np.load('wav.npy')[16:-15]#[:121]#[::2]
+wav = np.load('output/wav.npy')[16:-15]#[:121]#[::2]
 wav -= wav[len(wav)//2] # Centrered
 print('wav.shape',wav.shape)
 print('wav',wav)
-print(np.around(sorted(wav[ca8_idxs.astype('int')]),3))
 
 plt.figure()
 for i in range(15):
     plt.plot(wav,stokes[i,0,:])
-plt.savefig('stokes_sample_.pdf')
+plt.savefig('output/stokes_sample_.pdf')
 print(stokes.shape)
 
 
@@ -46,7 +46,7 @@ diff_point = []
 lrnet = 5e-4
 epsilon = 1e-9
 lrstep = 6
-folder = 'sampling_fullstokesI_2k'
+folder = 'output/sampling_fullstokesI_2k'
 
 
 import os
@@ -78,7 +78,6 @@ for jj in range(newpoints2add+1):
 
 
     loss_array = []
-    # diff_array = []
     for loop in tqdm(range(ni_epochs+1)):
         optimizer.zero_grad()        #reset gradients
         out = mod(x_torch)           #evaluate model
@@ -89,18 +88,12 @@ for jj in range(newpoints2add+1):
         loss.backward()              #calculate gradients
         optimizer.step()             #step fordward
         loss_array.append(loss.item())
-        
-        # diff_array.append(torch.mean(((mod(x_torch + noise_temp[:,:,xx]))- (y_torch+noise_temp))**2.,axis=0)[0,:])
-
         scheduler.step()
 
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    # result = torch.stack(diff_array, dim=1)
-    # diff = torch.mean(result[:,-ni_epochs//10:],axis=1) # larger average
     diff = torch.mean((out - y_torch)**2.,axis=0)[0,:]
-
     np.save(folder+'/out_pred_'+str(jj)+'.npy',out.detach().numpy())
 
     newpoint = torch.argmax(diff).item()
@@ -141,11 +134,8 @@ for jj in range(newpoints2add+1):
     out_test = out.detach().numpy()
     zoom = 0.8
     fig2, ax = plt.subplots(1, 5, sharey=True,figsize=(20*zoom,4.5*zoom))
-    # fig2, ax = plt.subplots(1, 15, sharey=True,figsize=(40*zoom,4.5*zoom))
     liseg = np.array([0,8,4,12,1000])
-    # liseg = np.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,25,26,27,28,29,30,31,32,33,34,35,36])
     for ii in range(len(ax)):
-        # ax[ii].set_title(str(liseg[ii]))
         ax[ii].plot(wav,stokes[liseg[ii],0,:],label='target')
         ax[ii].plot(wav,out_test[liseg[ii],0,:],label='output')
         ax[ii].scatter(wav[x.astype('int')],stokes[liseg[ii],0,x[:].astype('int')],color='red',label='sampling DNN',zorder=2,s=30.0,alpha=0.8)
@@ -156,17 +146,14 @@ for jj in range(newpoints2add+1):
     ax[0].set_xlabel(r"$\lambda - 8542.1$ $[\rm \AA]$")
     ax[0].set_ylabel(r'Stokes I/I$\rm _C$ [n='+str(2+jj)+' points]')
     plt.locator_params(axis='y', nbins=6)
-    # plt.ylim(-4,9.75)
     plt.savefig(folder+'/stokes_reconstruction_'+str(jj)+'.pdf',bbox_inches='tight')
     plt.close(fig2)
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
     if jj < newpoints2add:
         x = np.append(x, newpoint)
     
-    # np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
     print(np.around(sorted(wav[x.astype('int')]),3))
     print(np.around(sorted(wav[ca8_idxs.astype('int')]),3))
     

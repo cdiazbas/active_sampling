@@ -9,7 +9,6 @@ Creating the database for the sampling process
 Coded by Carlos Diaz (UiO-RoCS, 2022)
 """
 
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # READ THE PROFILES
@@ -52,7 +51,6 @@ databasek = kmeans.cluster_centers_.copy()
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 # Fake Stokes V under the WFA:
 from tqdm import tqdm
 from utils import line, cder
@@ -74,6 +72,9 @@ if not os.path.exists('output'):
 plt.figure()
 plt.plot(databasek[:50,:].T)
 plt.plot(databaseV[:50,:].T)
+plt.minorticks_on()
+plt.ylabel('Intensity axis [au]')
+plt.xlabel('Wavelength axis [index]')
 plt.savefig('output/stokes_sample.pdf')
 
 

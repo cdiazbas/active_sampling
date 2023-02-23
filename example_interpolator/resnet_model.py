@@ -5,6 +5,14 @@ import torch.nn.functional as F
 import random
 from torch.nn import init
 
+
+"""
+A general-purpose residual network for 1-dim inputs.
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
+
+
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class LayerNorm(nn.Module):
     # https://github.com/pytorch/pytorch/issues/1959#issuecomment-312364139

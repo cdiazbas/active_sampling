@@ -5,9 +5,16 @@ from astropy.convolution import convolve
 from utils import line, cder
 np.random.seed(seed=0)
 
+"""
+Evaluates how the inference improves depending on each method.
+Coded by Carlos Diaz (UiO-RoCS, 2022)
+"""
 
 
-stokes = np.load('stokesI.npy')
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+stokes = np.load('output/stokesI.npy')
 print(stokes.shape)
 
 stokes = np.expand_dims(stokes, axis=1)
@@ -36,7 +43,7 @@ for ii in tqdm(range(stokes.shape[0])):
 plt.figure()
 plt.plot(stokes[:50,0,:].T)
 plt.plot(stokesV[:50,0,:].T)
-plt.savefig('stokes_sample.pdf')
+plt.savefig('output/stokes_sample.pdf')
 
 
 # for jj in range(100):
@@ -51,17 +58,15 @@ for jj in [12]:
     noiseV = np.random.normal(0,noiselevel,size=stokesV[:,0,temporallist].shape)
     dIdw = cder(wav[temporallist], noiseI + stokes[:,0,temporallist][:,None,None,:])
     dIdw_ = cder(wav, stokes[:,0,:][:,None,None,:])[:,:,temporallist]
-    # from utils import cder2
-    # dIdw_2 = cder2(wav, stokes[:,0,:][:,None,None,:])[:,:,temporallist]
+
     Bv = np.sum((noiseV+ stokesV[:,0,temporallist]) * dIdw[:,0,:],axis=1) / (C * lin.geff*np.sum(dIdw[:,0,:]**2.,axis=1))
     plt.plot(wav[temporallist],dIdw_[profile,0,:],label='original')
-    # plt.plot(wav[temporallist],dIdw_2[0,0,:],label='Original2')
     plt.plot(wav[temporallist],dIdw[profile,0,:],label='original+noise')
 
 
     npoints = 21
     # Stokes I measured at few points: nn-guided
-    temporallist = sorted(np.load('sampling_fullstokesI/sampling_'+str(npoints-3)+'.npy').astype('int'))
+    temporallist = sorted(np.load('output/sampling_fullstokesI/sampling_'+str(npoints-3)+'.npy').astype('int'))
     print('nn-guided: ',temporallist)
     noiseI = np.random.normal(0,noiselevel,size= stokes[:,0,temporallist][:,None,None,:].shape)
     noiseV = np.random.normal(0,noiselevel,size=stokesV[:,0,temporallist].shape)
@@ -81,8 +86,8 @@ for jj in [12]:
 
 
     # Stokes I measured at few points and predicted
-    stokes_predicted = np.load('sampling_fullstokesI/out_pred_'+str(npoints-2)+'.npy')[:stokes.shape[0],:,:]
-    nnlist = np.load('sampling_fullstokesI/sampling_'+str(npoints-3)+'.npy').astype('int')
+    stokes_predicted = np.load('output/sampling_fullstokesI/out_pred_'+str(npoints-2)+'.npy')[:stokes.shape[0],:,:]
+    nnlist = np.load('output/sampling_fullstokesI/sampling_'+str(npoints-3)+'.npy').astype('int')
     temporallist = range(stokes.shape[-1])
     noiseI = np.random.normal(0,noiselevel,size= stokes[:,0,temporallist][:,None,None,:].shape)
     noiseV = np.random.normal(0,noiselevel,size=stokesV[:,0,temporallist].shape)
@@ -101,4 +106,4 @@ for jj in [12]:
     plt.ylabel(r'$\rm dI/d\lambda$ [a.u.]')
     plt.minorticks_on()
     plt.legend(loc='best')
-    plt.savefig('profiles/inference'+str(jj)+'.pdf')
+    plt.savefig('output/profiles/inference'+str(jj)+'.pdf')
