@@ -1,0 +1,1 @@
+/mn/stornext/d20/RoCS/carlosjd/projects/SAMPLING/active_sampling_testingIdeas/example3b_dmodel/realdata_example_stokesI_symmetric_half_fulltrain

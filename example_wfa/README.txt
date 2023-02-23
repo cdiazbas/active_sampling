@@ -1,0 +1,2 @@
+- sampling_realdata_stokes.py: finds the right sampling for Stokes I and save the results in the same folder
+- inference.py: evaluates how the inference improves depending on each method. Good figures: 12

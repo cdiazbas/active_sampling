@@ -25,14 +25,17 @@ stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
-temp = np.load('temperature.npy')/1e3
+temp = np.load('output/temperature.npy')/1e3
 temp = np.expand_dims(temp, axis=1)
 temp = np.concatenate((temp,temp)) # make that symmetric!
 
 
 for i in range(15):
     plt.plot(stokes[i,0,:])
-plt.savefig('stokes_sample_.pdf')
+plt.minorticks_on()
+plt.ylabel('Intensity axis [au]')
+plt.xlabel('Wavelength axis [index]')
+plt.savefig('output/stokes_sample_.pdf')
 
 print(stokes.shape)
 
@@ -46,6 +49,8 @@ npoints = 9
 ni_epochs = 10000
 lrstep = 6
 avoid = 3 # it is possible to avoid evaluate close points
+dirname = 'output/sampling_nn/'
+
 
 diff_point = []
 for inpoint in range(3,npoints+1):
@@ -118,7 +123,7 @@ for inpoint in range(3,npoints+1):
     plt.title('loss_final: {0:2.2e}'.format( np.min(loss_array)))
     plt.yscale('log')
     plt.minorticks_on()
-    plt.savefig('sampling_nn/error_'+str(inpoint)+'.pdf')
+    plt.savefig(dirname+'error_'+str(inpoint)+'.pdf')
     plt.close(fig1)
 
     fig1 = plt.figure()
@@ -130,7 +135,7 @@ for inpoint in range(3,npoints+1):
     plt.xlabel('Wavelength axis [index]')
     plt.ylabel('Mean squared error - Temperature [kK]')
     plt.minorticks_on()
-    plt.savefig('sampling_nn/comb_stokes_error_temp'+str(inpoint)+'.png')
+    plt.savefig(dirname+'comb_stokes_error_temp'+str(inpoint)+'.png')
     plt.close(fig1)
 
 
@@ -141,7 +146,7 @@ for inpoint in range(3,npoints+1):
     plt.xlabel('Wavelength axis [index]')
     plt.ylabel('Mean squared error - Temperature [kK]')
     plt.minorticks_on()
-    plt.savefig('sampling_nn/im_stokes_error_temp'+str(inpoint)+'.png')
+    plt.savefig(dirname+'im_stokes_error_temp'+str(inpoint)+'.png')
     plt.close(fig1)
 
 
@@ -149,7 +154,7 @@ for inpoint in range(3,npoints+1):
 
     print('n= '+str(len(x))+' +1 points ->',x.astype(np.int), newpoint, '=> {0:.2e}'.format(np.max(qresults_chi2)) )#, end='\r')
 
-    np.save('sampling_nn/stokes_error_temp'+str(inpoint)+'.npy',qresults_diff[newindex])
+    np.save(dirname+'stokes_error_temp'+str(inpoint)+'.npy',qresults_diff[newindex])
     x = np.append(x,newpoint)
 
 
@@ -164,8 +169,8 @@ for inpoint in range(3,npoints+1):
     plt.legend()
     plt.xlabel('Wavelength axis [index]')
     plt.ylabel('Intensity [n='+str(len(x))+' points]')
-    plt.savefig('sampling_nn/stokes_reconstruction_temp_'+str(inpoint)+'.png')
+    plt.savefig(dirname+'stokes_reconstruction_temp_'+str(inpoint)+'.png')
 
 
 # Save final sampling
-np.save('sampling_nn/final_sampling.npy',x)
+np.save(dirname+'final_sampling.npy',x)

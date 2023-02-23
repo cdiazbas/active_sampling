@@ -12,20 +12,22 @@ torch.set_printoptions(sci_mode=False)
 from resnet_model import ResidualNet
 
 """
-Testing uniform sampling for the CaII line at 8542A using the temperature
+Testing nn-guided sampling for the CaII line at 8542A using the temperature
 Coded by Carlos Diaz (UiO-RoCS, 2022)
+
+** The chosen scheme needs a last run without context to work properly
 """
 
 
 # Sampling a spectral line:
-stokes = np.load('stokes.npy')
+stokes = np.load('output/stokes.npy')
 stokes = np.expand_dims(stokes, axis=1)
 
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
 stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
-temp = np.load('temperature.npy')/1e3
+temp = np.load('output/temperature.npy')/1e3
 temp = np.expand_dims(temp, axis=1)
 temp = np.concatenate((temp,temp)) # make that symmetric!
 
@@ -35,7 +37,7 @@ for i in range(15):
 plt.minorticks_on()
 plt.ylabel('Intensity axis [au]')
 plt.xlabel('Wavelength axis [index]')
-plt.savefig('stokes_sample_.pdf')
+plt.savefig('output/stokes_sample_.pdf')
 
 print(stokes.shape)
 
@@ -48,7 +50,7 @@ results_xx = []
 results_chi2 = []
 
 
-def f_nn(x,edges=None,ni_epochs=5000):
+def f_nn(x,edges=None,ni_epochs=5000,dirname='output'):
     
     chi2 = 0.0
     lrstep = 6
@@ -92,7 +94,7 @@ def f_nn(x,edges=None,ni_epochs=5000):
     plt.title('loss_final: {0:2.2e}'.format( np.min(loss_array)))
     plt.yscale('log')
     plt.minorticks_on()
-    plt.savefig('output/sampling_uniform/error_'+str(inpoint)+'.pdf')
+    plt.savefig(dirname+'/error_'+str(inpoint)+'.pdf')
     plt.close(fig1)
 
     fig1 = plt.figure()
@@ -102,10 +104,10 @@ def f_nn(x,edges=None,ni_epochs=5000):
     plt.yscale('log')
     plt.xlabel('Logtau axis [index]')
     plt.ylabel('Mean squared error')
-    plt.savefig('output/sampling_uniform/stokes_error_temp'+str(input_size)+'.png')
+    plt.savefig(dirname+'/stokes_error_temp'+str(input_size)+'.png')
     plt.close(fig1)
 
-    np.save('output/sampling_uniform/stokes_error_temp'+str(input_size)+'.npy',diff.detach().numpy())
+    np.save(dirname+'/stokes_error_temp'+str(input_size)+'.npy',diff.detach().numpy())
 
 
     # print(xx, chi2)#, end='\r')
@@ -123,12 +125,14 @@ def f_nn(x,edges=None,ni_epochs=5000):
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 npoints = 9
 ni_epochs = 10000
+dirname = 'output/sampling_nn_v2'
 
 for inpoint in range(3,npoints+1):
 
-    x = np.linspace(0.0, stokes.shape[2]-1,inpoint).astype('int')
+    x = np.load('sampling_nn/final_sampling.npy').astype('int')[:inpoint]
     print('=>',x)
-    xfun = f_nn(x[0],edges=x[1:],ni_epochs=ni_epochs)
+
+    xfun = f_nn(x[0],edges=x[1:],ni_epochs=ni_epochs,dirname=dirname)
 
 
     f, ax = plt.subplots(1, 5, sharey=True,figsize=(20,5))
@@ -140,8 +144,8 @@ for inpoint in range(3,npoints+1):
     plt.legend()
     plt.xlabel('Wavelength axis [index]')
     plt.ylabel('Intensity [n='+str(len(x))+' points]')
-    plt.savefig('output/sampling_uniform/stokes_reconstruction_temp_'+str(len(x))+'.png')
+    plt.savefig(dirname+'/stokes_reconstruction_temp_'+str(len(x))+'.png')
 
 
 # Save final sampling
-np.save('output/sampling_uniform/final_sampling.npy',x)
+np.save(dirname+'/final_sampling.npy',x)
