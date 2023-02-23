@@ -29,7 +29,7 @@ def sampling_mode(size, npoints, ninner, distance, multiple=1):
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Training set
-stokes = np.load('stokes.npy')
+stokes = np.load('output/stokes.npy')
 
 stokes = np.expand_dims(stokes, axis=1)
 stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
@@ -37,15 +37,15 @@ stokes = stokes[:,:,16:-15] # make that symmetric!
 stokes = stokes[:,:,:121]#[:,:,::2]
 
 
-wav = np.load('wav.npy')[16:-15][:121]#[::2]
+wav = np.load('output/wav.npy')[16:-15][:121]#[::2]
 wav -= wav[-1] # Centrered
 print('wav.shape',wav.shape)
-print('wav comparison:',np.around(sorted(wav[ca8_idxs.astype('int')]),3))
+
 
 plt.figure()
 for i in range(15):
     plt.plot(wav,stokes[i,0,:])
-plt.savefig('stokes_sample_.pdf')
+plt.savefig('output/stokes_sample_.pdf')
 print(stokes.shape)
 
 
@@ -60,8 +60,13 @@ epsilon = 1e-7
 lrstep = 6
 noise = 1e-4
 batch_size = 1000
-folderloop = 'results_loops/'
+folderloop = 'output/results_loops/'
 qq = 40
+
+import os
+if not os.path.exists(folderloop):
+   os.makedirs(folderloop)
+
 
 for npoints in range(2,10):
     for mm in range(1,10):

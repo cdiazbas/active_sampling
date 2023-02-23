@@ -39,7 +39,6 @@ stokes = stokes[:,:,:121]#[:,:,::2]
 wav = np.load('output/wav.npy')[16:-15][:121]#[::2]
 wav -= wav[-1] # Centrered
 print('wav.shape',wav.shape)
-print('wav comparison:',np.around(sorted(wav[ca8_idxs.astype('int')]),3))
 
 plt.figure()
 for i in range(15):
