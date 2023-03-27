@@ -60,7 +60,7 @@ def f_nn(x,edges=None,ni_epochs=5000):
     chi2 = 0.0
     lrstep = 6
     x = np.append(x, edges)
-    xx = x.astype('int')#.astype('float32')
+    xx = x.astype('int')
 
 
     input_size = len(xx)
@@ -139,7 +139,6 @@ for inpoint in range(3,npoints+1):
     f, ax = plt.subplots(1, 5, sharey=True,figsize=(20,5))
     for ii in range(5):
         ax[ii].plot(stokes[ii,0,:],label='target')
-        # ax[ii].plot(out[ii,0,:],label='output')
         ax[ii].scatter(x[:],stokes[ii,0,x[:].astype('int')],color='red',label='sampling')
 
     plt.legend()

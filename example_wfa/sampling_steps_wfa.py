@@ -1,5 +1,3 @@
-# /mn/stornext/d20/RoCS/carlosjd/projects/SAMPLING/active_sampling_testingIdeas/example5_wfa/
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -25,16 +23,18 @@ stokesV = np.expand_dims(stokesV, axis=1)[:,:,removeedge:-removeedge-1]
 blos = np.load('output/Blist.npy')
 blos = np.expand_dims(blos, axis=1)
 
-stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
-stokes = np.concatenate((stokes,stokes[:,:,::-1])) # make that symmetric!
-stokesV = np.concatenate((stokesV,stokesV[:,:,::-1])) # make that symmetric!
-stokesV = np.concatenate((stokesV,-stokesV[:,:,::-1])) # make that symmetric!
-blos = np.concatenate((blos,-blos)) # make that symmetric!
-blos = np.concatenate((blos,blos)) # make that symmetric!
+# Make the spectra symmetric:
+stokes = np.concatenate((stokes,stokes[:,:,::-1]))
+stokes = np.concatenate((stokes,stokes[:,:,::-1])) 
+stokesV = np.concatenate((stokesV,stokesV[:,:,::-1]))
+stokesV = np.concatenate((stokesV,-stokesV[:,:,::-1]))
+blos = np.concatenate((blos,-blos))
+blos = np.concatenate((blos,blos))
 
+# Saving the wavelength array:
 wav = np.load('output/wav.npy')[removeedge:-removeedge-1]+0.0035
 
-
+# Some plots to test the profiles:
 for i in range(15):
     plt.plot(stokes[i,0,:])
 plt.savefig('output/stokes_sample_.pdf')
@@ -47,9 +47,9 @@ print(stokes.shape)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 x = np.array([np.argmin(np.abs(wav))])
-npoints = 6#9
-avoid = -1#3 # it is possible to avoid evaluate close points
-noiselevel = 1e-3#.0#1e-2
+npoints = 6
+avoid = -1 # it is possible to avoid evaluate close points
+noiselevel = 1e-3
 folder = 'output/sampling_noise_dIdw_core_uniform'
 symmetric = True
 originaldIdw = False
@@ -97,15 +97,11 @@ for inpoint in range(len(x)+1,len(x)+npoints+1):
         else:  
             temporallist = list(np.unique(list(x)+[qq]).astype('int32'))
         
-        # nn = 10
-        # temporallist = list(np.arange(stokesV.shape[-1]))[::nn]
-        try:
-        
+        try:        
             # Add some extra noise:
             noiseI = np.random.normal(0,noiselevel,size= stokes[:,0,temporallist][:,None,None,:].shape)
             noiseV = np.random.normal(0,noiselevel,size=stokesV[:,0,temporallist].shape)
             
-            # dIdw = cder(wav, stokes[:,0,:][:,None,None,:])[:,:,temporallist]
             if originaldIdw is True:
                 dIdw = dIdw_[:,:,temporallist]
             else:

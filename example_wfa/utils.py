@@ -1,5 +1,5 @@
 import numpy as np
-# from https://github.com/morosinroberta/spatial_WFA/blob/master/wfa_spatial.py
+# Source: https://github.com/morosinroberta/spatial_WFA/blob/master/wfa_spatial.py
 
 # ====================================================================
 class line:

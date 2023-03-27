@@ -4,7 +4,7 @@ import warnings
 from abc import abstractmethod
 from typing import Tuple
 
-# From https://github.com/mfkasim1/xitorch
+# Source: https://github.com/mfkasim1/xitorch
 
 def get_extrap_pos(xqextrap, extrap, xmin=0.0, xmax=1.0):
     # xqextrap: (nrq,)
