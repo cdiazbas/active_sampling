@@ -1,7 +1,7 @@
 # Designing wavelength sampling for Fabry-Pérot observations
 
 
-This repository contains the code to design wavelength sampling schemes for Fabry-Pérot observations ([https://arxiv.org/abs/XXX](https://arxiv.org/abs/XXX)).
+This repository contains the code to design wavelength sampling schemes for Fabry-Pérot observations ([https://arxiv.org/abs/2303.13875](https://arxiv.org/abs/2303.13875)).
 
 ![example](images/sketch.png?raw=true "")
 
